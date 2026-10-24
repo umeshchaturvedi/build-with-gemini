@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup Plan · Build with Gemini (Track 3)</title>
+<meta name="description" content="Parallelized setup plan for the build-with-gemini starter kit on Windows: waves, lanes, dependencies, critical path and an interactive checklist.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070a12; --bg2:#0d1220; --glass:rgba(255,255,255,.045); --glass-b:rgba(255,255,255,.09);
+    --txt:#e7ecf5; --mut:#8d97ad; --blue:#5b8cff; --red:#ff6b6b; --yellow:#ffc857; --green:#34d399;
+    --violet:#a78bfa; --cyan:#22d3ee; --crit:#ff8a3d;
+    --grad:linear-gradient(135deg,#5b8cff 0%,#a78bfa 40%,#ff6b9d 70%,#ffc857 100%);
+    --r:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.55;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:-20%;z-index:-1;
+    background:radial-gradient(40% 35% at 15% 10%,rgba(91,140,255,.22),transparent 70%),
+               radial-gradient(35% 30% at 85% 20%,rgba(167,139,250,.18),transparent 70%),
+               radial-gradient(40% 40% at 60% 95%,rgba(255,107,157,.12),transparent 70%);
+    animation:drift 22s ease-in-out infinite alternate}
+  @keyframes drift{to{transform:translate3d(3%,-2%,0) scale(1.05)}}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 28px}
+  header{padding:72px 0 36px;text-align:center}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-b);font-size:.8rem;color:var(--mut);letter-spacing:.04em}
+  .pill i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+  h1{font-family:Outfit;font-weight:800;font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.08;margin:18px 0 14px;letter-spacing:-.02em}
+  h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--mut);max-width:720px;margin:0 auto;font-size:1.05rem}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:36px auto 0;max-width:900px}
+  .stat{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:18px;backdrop-filter:blur(14px);transition:transform .25s}
+  .stat:hover{transform:translateY(-3px)}
+  .stat b{display:block;font-family:Outfit;font-size:2rem;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat small{color:var(--mut);font-size:.8rem}
+  nav.tabs{position:sticky;top:0;z-index:20;display:flex;gap:6px;justify-content:center;padding:14px;margin:30px 0 10px;background:rgba(7,10,18,.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-b)}
+  nav.tabs a{color:var(--mut);text-decoration:none;font-size:.88rem;padding:8px 14px;border-radius:10px;transition:.2s}
+  nav.tabs a:hover{color:var(--txt);background:var(--glass)}
+  section{padding:40px 0}
+  h2{font-family:Outfit;font-size:1.7rem;margin-bottom:6px}
+  .sub{color:var(--mut);margin-bottom:24px}
+  /* progress */
+  .progress{display:flex;align-items:center;gap:16px;background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:16px 20px;margin-bottom:22px}
+  .bar{flex:1;height:10px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+  .bar>div{height:100%;width:0;background:var(--grad);border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .progress b{font-family:Outfit;min-width:64px;text-align:right}
+  .btn{cursor:pointer;border:1px solid var(--glass-b);background:var(--glass);color:var(--txt);padding:8px 14px;border-radius:10px;font:500 .82rem Inter;transition:.2s}
+  .btn:hover{border-color:var(--blue);box-shadow:0 0 0 3px rgba(91,140,255,.15)}
+  .btn.on{background:rgba(255,138,61,.15);border-color:var(--crit);color:#ffd2b3}
+  /* board */
+  .board{display:flex;gap:18px;overflow-x:auto;padding:6px 4px 22px;scroll-snap-type:x mandatory}
+  .board::-webkit-scrollbar{height:8px}.board::-webkit-scrollbar-thumb{background:#273049;border-radius:9px}
+  .wave{flex:0 0 280px;scroll-snap-align:start;display:flex;flex-direction:column;gap:12px;position:relative}
+  .wave:not(:last-child)::after{content:"➜";position:absolute;right:-16px;top:14px;color:#3a4566;font-size:1rem}
+  .whead{padding:12px 14px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--glass-b)}
+  .whead small{color:var(--mut);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+  .whead h3{font-family:Outfit;font-size:1.05rem;margin-top:2px}
+  .whead .par{float:right;font-size:.7rem;padding:3px 8px;border-radius:99px;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.3)}
+  .whead .par.seq{background:rgba(255,200,87,.1);color:var(--yellow);border-color:rgba(255,200,87,.3)}
+  .whead .par.gate{background:rgba(255,107,107,.1);color:var(--red);border-color:rgba(255,107,107,.35)}
+  .card{position:relative;background:var(--glass);border:1px solid var(--glass-b);border-radius:14px;padding:14px 14px 12px 16px;backdrop-filter:blur(12px);cursor:pointer;transition:transform .2s,border-color .2s,opacity .3s,box-shadow .2s;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--blue))}
+  .card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.18);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .card .t{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:.92rem}
+  .chk{flex:0 0 18px;height:18px;border-radius:6px;border:2px solid #45506d;margin-top:2px;display:grid;place-items:center;transition:.2s}
+  .card.done .chk{background:var(--green);border-color:var(--green)}
+  .card.done .chk::after{content:"✓";color:#05130d;font-size:.72rem;font-weight:800}
+  .card.done{opacity:.55}.card.done .t span{text-decoration:line-through}
+  .card p{color:var(--mut);font-size:.8rem;margin:6px 0 0 28px}
+  .card code{display:block;margin:8px 0 0 28px;font:400 .72rem "JetBrains Mono";color:#c8d3ff;background:rgba(0,0,0,.35);padding:7px 9px;border-radius:8px;white-space:pre-wrap;word-break:break-all}
+  .tags{margin:8px 0 0 28px;display:flex;gap:5px;flex-wrap:wrap}
+  .tag{font-size:.66rem;padding:2px 7px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--mut)}
+  .tag.crit{background:rgba(255,138,61,.14);color:#ffb37a}
+  .tag.skill{background:rgba(167,139,250,.14);color:#cdbbff}
+  body.critmode .card:not(.isCrit){opacity:.18;filter:saturate(.3)}
+  body.critmode .card.isCrit{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit),0 0 24px rgba(255,138,61,.25)}
+  /* legend */
+  .legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--mut);font-size:.8rem;margin-bottom:16px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{width:12px;height:12px;border-radius:4px;background:var(--c)}
+  /* diagram */
+  .panel{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:22px;backdrop-filter:blur(14px);overflow-x:auto}
+  .mermaid{min-width:900px;text-align:center}
+  /* notes */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .note{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:18px;border-top:3px solid var(--c)}
+  .note h4{font-family:Outfit;margin-bottom:6px}
+  .note p{color:var(--mut);font-size:.86rem}
+  .note code{font:.78rem "JetBrains Mono";color:#c8d3ff}
+  footer{color:var(--mut);text-align:center;padding:40px 0 60px;font-size:.82rem}
+  footer a{color:var(--blue)}
+  @media(max-width:860px){.stats,.grid3{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.stats,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="pill"><i></i> build-with-gemini · Windows local setup</div>
+  <h1>Ship an agent-first app,<br><span>in parallel waves</span></h1>
+  <p>Every column is a wave. Everything inside a wave runs at the same time; a wave starts only when its dependencies finish. Click a card to tick it off — progress is saved in your browser.</p>
+  <div class="stats">
+    <div class="stat"><b id="sWaves">11</b><small>waves</small></div>
+    <div class="stat"><b id="sTasks">0</b><small>tasks</small></div>
+    <div class="stat"><b id="sPar">0</b><small>max parallel lanes</small></div>
+    <div class="stat"><b id="sCrit">0</b><small>critical-path steps</small></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <a href="#board">Wave board</a><a href="#diagram">Dependency graph</a><a href="#gotchas">Windows gotchas</a>
+</nav>
+
+<main class="wrap">
+  <section id="board">
+    <h2>Wave board</h2>
+    <p class="sub">Scroll horizontally →. Toggle the critical path to see which steps actually gate delivery.</p>
+    <div class="progress">
+      <div class="bar"><div id="barFill"></div></div><b id="pct">0%</b>
+      <button class="btn" id="critBtn">🔥 Critical path</button>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+    <div class="legend">
+      <span style="--c:var(--blue)"><i></i>Toolchain</span>
+      <span style="--c:var(--cyan)"><i></i>Google Cloud</span>
+      <span style="--c:var(--violet)"><i></i>Antigravity / skills</span>
+      <span style="--c:var(--green)"><i></i>Agent build</span>
+      <span style="--c:var(--yellow)"><i></i>Ship & share</span>
+      <span style="--c:var(--crit)"><i></i>Critical path</span>
+    </div>
+    <div class="board" id="boardEl"></div>
+  </section>
+
+  <section id="diagram">
+    <h2>Dependency graph</h2>
+    <p class="sub">Orange edges/nodes form the critical path; everything else is slack that runs alongside it.</p>
+    <div class="panel"><pre class="mermaid" id="mm">
+flowchart LR
+  classDef crit fill:#3a1f0e,stroke:#ff8a3d,color:#ffd9bf,stroke-width:2px
+  classDef tool fill:#111a33,stroke:#5b8cff,color:#dfe7ff
+  classDef gcp fill:#0b2530,stroke:#22d3ee,color:#d4f7ff
+  classDef agy fill:#1e1736,stroke:#a78bfa,color:#ece5ff
+  classDef build fill:#0b2a20,stroke:#34d399,color:#d6fbe9
+  classDef ship fill:#2e2510,stroke:#ffc857,color:#fff1cf
+  subgraph W1["W1 · Install (parallel)"]
+    G["gcloud CLI"]:::crit
+    U["Python 3.12 + uv"]:::tool
+    N["Node.js LTS"]:::tool
+    GH["Git + gh"]:::tool
+    B["Brainstorm → project_brief.md"]:::agy
+  end
+  G --> AU["W2 · gcloud login + ADC"]:::crit
+  U --> AC["W2 · uv tool install google-agents-cli"]:::tool
+  GH --> GHA["W2 · gh auth login"]:::tool
+  AU --> P["W3 · Pin project + enable APIs"]:::crit
+  AC --> AS["W3 · agents-cli setup --skip-auth"]:::agy
+  N --> AS
+  P --> IAM["W4 · roles/aiplatform.user"]:::crit
+  P --> FS["W4 · Firestore DB"]:::gcp
+  P --> GCS["W4 · GCS bucket"]:::gcp
+  AS --> RS["W4 · Restart AGY, /skills /mcp"]:::agy
+  IAM --> PF{{"W5 · Preflight gate"}}:::crit
+  RS --> PF
+  PF --> SC["W6 · Scaffold agent"]:::crit
+  B --> SC
+  SC --> MEM["Memory Bank"]:::build
+  SC --> TL["Firestore tools + seed"]:::crit
+  SC --> RAG["RAG corpus"]:::build
+  SC --> A2["A2UI cards"]:::build
+  SC --> IMG["Image gen"]:::build
+  FS --> TL
+  GCS --> IMG
+  GCS --> RAG
+  MEM & TL & RAG & A2 & IMG --> LT["W8 · Local test (uv run adk web)"]:::crit
+  LT --> DP["W9 · Deploy* + SA roles"]:::crit
+  LT --> RD["W10 · Record demo"]:::ship
+  DP --> FE["W10 · Frontend → Cloud Run"]:::crit
+  FE --> PUB["W11 · Publish to GitHub"]:::crit
+  RD --> PUB
+  GHA --> PUB
+  linkStyle 0,3,6,10,12,15,23,27,29,30 stroke:#ff8a3d,stroke-width:2.5px
+    </pre></div>
+  </section>
+
+  <section id="gotchas">
+    <h2>Windows-specific gotchas</h2>
+    <p class="sub">Differences from the Linux / Qwiklabs lab workstation the upstream guide assumes.</p>
+    <div class="grid3">
+      <div class="note" style="--c:var(--red)"><h4>&amp; in the path</h4><p>The workspace path contains <code>&amp;</code> and spaces, which breaks <code>.cmd</code> shims like <code>npx.cmd</code>. Always quote it; if MCP / npm fails, move the repo to <code>D:\wspace\build-with-gemini</code>.</p></div>
+      <div class="note" style="--c:var(--yellow)"><h4>Firebase MCP</h4><p>If the <code>firebase</code> server won't start, set <code>"command": "npx.cmd"</code> in <code>.agents/mcp_config.json</code>.</p></div>
+      <div class="note" style="--c:var(--blue)"><h4>Env vars</h4><p>Use <code>$env:GOOGLE_CLOUD_PROJECT="…"</code> (session) plus <code>SetEnvironmentVariable(…,"User")</code> to persist. Use <code>Select-String</code> instead of <code>grep</code>.</p></div>
+      <div class="note" style="--c:var(--violet)"><h4>Skip shim check</h4><p>Preflight check 6 (xdg-open / shim) is only for the Linux Selkie desktop — skip it on Windows.</p></div>
+      <div class="note" style="--c:var(--cyan)"><h4>No "qwiklabs" ID</h4><p>Your own project ID won't contain <code>qwiklabs</code>. Ensure billing is on and run <code>set-quota-project</code> for ADC.</p></div>
+      <div class="note" style="--c:var(--green)"><h4>Always <code>uv run</code></h4><p>Bare <code>adk</code> hits the global Python. Use <code>uv run adk web</code> so project deps resolve.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>Full text instructions: <a href="../SETUP.md">SETUP.md</a> · Lab guide: <a href="https://cszhu.github.io/build-with-gemini/">cszhu.github.io/build-with-gemini</a></footer>
+
+<script>
+const C={tool:"var(--blue)",gcp:"var(--cyan)",agy:"var(--violet)",build:"var(--green)",ship:"var(--yellow)"};
+const WAVES=[
+ {n:"W1",title:"Install toolchain",mode:"par",tasks:[
+  {id:"gcloud",t:"Install gcloud CLI",k:"tool",crit:1,cmd:"winget install -e --id Google.CloudSDK"},
+  {id:"uv",t:"Install uv + Python 3.12",k:"tool",cmd:"winget install -e --id astral-sh.uv\nuv python install 3.12"},
+  {id:"node",t:"Install Node.js LTS",k:"tool",p:"Firebase MCP, skill install, Playwright",cmd:"winget install -e --id OpenJS.NodeJS.LTS"},
+  {id:"git",t:"Install Git + GitHub CLI",k:"tool",cmd:"winget install -e --id Git.Git\nwinget install -e --id GitHub.cli"},
+  {id:"brief",t:"Brainstorm → project_brief.md",k:"agy",skill:"pick-your-agent-project",p:"No dependencies — start immediately in AGY."}]},
+ {n:"W2",title:"Authenticate & CLI",mode:"par",tasks:[
+  {id:"auth",t:"gcloud login + ADC",k:"gcp",crit:1,p:"Both logins required; missing ADC = #1 cause of 403s.",cmd:"gcloud auth login\ngcloud auth application-default login"},
+  {id:"acli",t:"Install agents-cli",k:"tool",cmd:"uv tool install google-agents-cli\nagents-cli --version"},
+  {id:"gh",t:"GitHub auth",k:"tool",cmd:"gh auth login"}]},
+ {n:"W3",title:"Project & skills",mode:"par",tasks:[
+  {id:"proj",t:"Pin project + enable APIs",k:"gcp",crit:1,p:"One call enables all APIs concurrently.",cmd:"$env:GOOGLE_CLOUD_PROJECT=\"<id>\"\ngcloud config set project $env:GOOGLE_CLOUD_PROJECT\ngcloud auth application-default set-quota-project $env:GOOGLE_CLOUD_PROJECT\ngcloud services enable aiplatform.googleapis.com firestore.googleapis.com storage.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com developerknowledge.googleapis.com"},
+  {id:"asetup",t:"Register agents-cli skills",k:"agy",p:"Needs agents-cli + Node.",cmd:"agents-cli setup --skip-auth"}]},
+ {n:"W4",title:"Infra & AGY reload",mode:"par",tasks:[
+  {id:"iam",t:"Grant roles/aiplatform.user",k:"gcp",crit:1,cmd:"gcloud projects add-iam-policy-binding $env:GOOGLE_CLOUD_PROJECT --member=\"user:<you>\" --role=roles/aiplatform.user"},
+  {id:"fs",t:"Create Firestore DB",k:"gcp",cmd:"gcloud firestore databases create --location=nam5"},
+  {id:"gcs",t:"Create GCS bucket",k:"gcp",cmd:"gcloud storage buckets create gs://$env:GOOGLE_CLOUD_PROJECT-assets --location=us-central1"},
+  {id:"restart",t:"Restart AGY → /skills, /mcp",k:"agy",p:"Expect google-agents-cli-* skills + firebase & developer-knowledge MCP."}]},
+ {n:"W5",title:"Preflight",mode:"gate",tasks:[
+  {id:"pre",t:"\u201cVerify my setup.\u201d",k:"agy",crit:1,skill:"troubleshoot-lab-setup",p:"Checks 0–5. Skip check 6 (Linux shim) on Windows."}]},
+ {n:"W6",title:"Scaffold",mode:"gate",tasks:[
+  {id:"scaf",t:"Scaffold agent from brief",k:"build",crit:1,p:"Needs preflight ✅ and project_brief.md.",cmd:"uv run adk web --port 8080 --allow_origins \"*\" --reload_agents"}]},
+ {n:"W7",title:"Feature tracks",mode:"par",tasks:[
+  {id:"mem",t:"Cross-session memory",k:"build",skill:"setup-memory-bank"},
+  {id:"tools",t:"Firestore tools + seed data",k:"build",crit:1,p:"Pin Firestore by project ID, not number."},
+  {id:"rag",t:"RAG grounding corpus",k:"build",skill:"build-rag"},
+  {id:"a2ui",t:"Rich A2UI cards",k:"build",skill:"enable-a2ui",p:"Merge callbacks with Memory carefully."},
+  {id:"img",t:"Image generation → GCS",k:"build",p:"Nano Banana 2 Lite; public bucket URL."}]},
+ {n:"W8",title:"Local test",mode:"seq",tasks:[
+  {id:"lt",t:"Test in Playground / agents-cli run",k:"build",crit:1,p:"Don't redeploy to test."}]},
+ {n:"W9",title:"Deploy",mode:"seq",tasks:[
+  {id:"dep",t:"agents-cli deploy + SA roles",k:"ship",crit:1,p:"Only when you explicitly ask. Grant datastore.user + storage.objectAdmin to the RE service account."}]},
+ {n:"W10",title:"Ship the face",mode:"par",tasks:[
+  {id:"fe",t:"Frontend → Cloud Run",k:"ship",crit:1,skill:"build-agent-frontend",p:"Grant Cloud Run SA roles/aiplatform.user."},
+  {id:"demo",t:"Record demo video",k:"ship",skill:"record-demo",p:"Can target Playground (port 8000) — no need to wait for frontend."}]},
+ {n:"W11",title:"Publish",mode:"seq",tasks:[
+  {id:"pub",t:"Publish & submit",k:"ship",crit:1,skill:"publish-to-github"}]}
+];
+const KEY="bwg-setup-plan";
+let done=new Set(JSON.parse(localStorage.getItem(KEY)||"[]"));
+const board=document.getElementById("boardEl");
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const label={par:"⇉ parallel",seq:"→ sequential",gate:"⛔ gate"};
+let total=0,crit=0,maxPar=0;
+WAVES.forEach(w=>{
+  const col=document.createElement("div");col.className="wave";
+  col.innerHTML=`<div class="whead"><span class="par ${w.mode}">${label[w.mode]}</span><small>${w.n}</small><h3>${w.title}</h3></div>`;
+  if(w.mode==="par")maxPar=Math.max(maxPar,w.tasks.length);
+  w.tasks.forEach(t=>{
+    total++;if(t.crit)crit++;
+    const el=document.createElement("article");
+    el.className="card"+(t.crit?" isCrit":"")+(done.has(t.id)?" done":"");
+    el.id="task-"+t.id;el.style.setProperty("--c",t.crit?"var(--crit)":C[t.k]);
+    el.innerHTML=`<div class="t"><div class="chk"></div><span>${esc(t.t)}</span></div>`+
+      (t.p?`<p>${esc(t.p)}</p>`:"")+(t.cmd?`<code>${esc(t.cmd)}</code>`:"")+
+      `<div class="tags">${t.skill?`<span class="tag skill">skill: ${t.skill}</span>`:""}${t.crit?`<span class="tag crit">critical</span>`:""}</div>`;
+    el.addEventListener("click",e=>{
+      if(e.target.tagName==="CODE")return;
+      done.has(t.id)?done.delete(t.id):done.add(t.id);
+      el.classList.toggle("done");save();
+    });
+    col.appendChild(el);
+  });
+  board.appendChild(col);
+});
+function save(){localStorage.setItem(KEY,JSON.stringify([...done]));upd()}
+function upd(){const p=Math.round(done.size/total*100);document.getElementById("barFill").style.width=p+"%";document.getElementById("pct").textContent=p+"%"}
+function count(id,to){let n=0;const el=document.getElementById(id);const iv=setInterval(()=>{el.textContent=++n;if(n>=to)clearInterval(iv)},40)}
+count("sTasks",total);count("sPar",maxPar);count("sCrit",crit);upd();
+document.getElementById("critBtn").onclick=e=>{document.body.classList.toggle("critmode");e.currentTarget.classList.toggle("on")};
+document.getElementById("resetBtn").onclick=()=>{done.clear();document.querySelectorAll(".card.done").forEach(c=>c.classList.remove("done"));save()};
+</script>
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({startOnLoad:true,theme:"dark",themeVariables:{fontFamily:"Inter",background:"transparent",clusterBkg:"rgba(255,255,255,0.03)",clusterBorder:"#2a3352",lineColor:"#56617f"},flowchart:{curve:"basis",nodeSpacing:28,rankSpacing:46}});
+</script>
+</body>
+</html>

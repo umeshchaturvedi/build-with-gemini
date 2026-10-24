@@ -144,6 +144,8 @@ A **skill** is a bundle of instructions that loads automatically when it's relev
 
 The full, step-by-step walkthrough lives on the **[lab guide](https://cszhu.github.io/build-with-gemini/)**. This is the short version.
 
+> 🪟 **Running on your own Windows machine?** Follow **[SETUP.md](SETUP.md)** — a parallelized, wave-by-wave setup plan with PowerShell commands — or open the visual version at [`docs/setup-plan.html`](docs/setup-plan.html).
+
 **Prerequisites** (the lab workstation comes with all of this pre-installed; you'll need it if you're running on your own machine):
 
 - A **Google Cloud project** with billing enabled
